@@ -4,7 +4,7 @@ provider "oci" {
 
 module "vcn" {
   source  = "oracle-terraform-modules/vcn/oci"
-  version = "3.1.0"
+  version = "3.5.4"
 
   compartment_id = var.COMPARTMENT_ID
   region         = var.REGION
@@ -154,7 +154,7 @@ resource "oci_core_subnet" "vcn_public_subnet" {
 
 resource "oci_containerengine_cluster" "k8s_cluster" {
   compartment_id     = var.COMPARTMENT_ID
-  kubernetes_version = "v1.26.2"
+  kubernetes_version = "v1.27.2"
   name               = "k8s-cluster"
   vcn_id             = module.vcn.vcn_id
 
@@ -186,23 +186,23 @@ locals {
 }
 
 data "oci_core_images" "latest_image" {
-  compartment_id = var.COMPARTMENT_ID
-  operating_system = "Oracle Linux"
+  compartment_id           = var.COMPARTMENT_ID
+  operating_system         = "Oracle Linux"
   operating_system_version = "8"
   filter {
     name   = "display_name"
     values = ["^.*aarch64-.*$"]
-    regex = true
+    regex  = true
   }
 }
 
 resource "oci_containerengine_node_pool" "k8s_node_pool" {
   cluster_id         = oci_containerengine_cluster.k8s_cluster.id
   compartment_id     = var.COMPARTMENT_ID
-  kubernetes_version = "v1.26.2"
+  kubernetes_version = "v1.27.2"
   name               = "k8s-node-pool"
   node_config_details {
-    dynamic placement_configs {
+    dynamic "placement_configs" {
       for_each = local.azs
       content {
         availability_domain = placement_configs.value
